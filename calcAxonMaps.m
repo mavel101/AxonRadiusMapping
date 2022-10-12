@@ -13,6 +13,8 @@ nifti_info.PixelDimensions = nifti_info.PixelDimensions(1:3);
 
 delta = [15, 15];
 Delta = [29.25, 29.25];
+
+% WIP: calculate corrected g with Lukes script
 g = [sqrt(6000/30450)*280, 280];
 
 ar = zeros(size(data_6000),'like',data_6000);
@@ -30,6 +32,7 @@ end
 name = extractBefore(name, ".");
 savename = strcat(path,'/',name,'_axonMap');
 
+nifti_info.Datatype = class(ar);
 niftiwrite(ar, savename, nifti_info);
 
 end
