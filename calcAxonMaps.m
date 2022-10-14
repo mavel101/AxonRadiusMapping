@@ -52,9 +52,7 @@ for i = 1:size(ix,1)
 end
 
 [path, name] = fileparts(in_6000);
-name = extractBefore(name, ".");
-savename = strcat(path,'/',name,'_axonMap');
-
+savename = fullfile(path,'AxonRadiusMap');
 nifti_info.Datatype = class(ar);
 niftiwrite(ar, savename, nifti_info);
 
