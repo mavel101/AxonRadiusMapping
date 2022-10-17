@@ -21,13 +21,6 @@ delta = [15, 15];
 Delta = [29.25, 29.25];
 g = [sqrt(bval1/bval2)*gmax, gmax];
 
-% correct gradient for slightly incorrect b-value calculation in getAxonRadius
-gyroMagnRatio =  267.513*10^(-6);
-q = g*gyroMagnRatio;
-b = (q.*delta).^2.*(Delta - delta/3); % from getAxonRadius
-g(1) = g(1) * sqrt(bval1/b(1));
-g(2) = g(2) * sqrt(bval2/b(2));
-
 % correct gradient with factors from nonlinearity correction
 bval = importdata(in_bval);
 bvec = importdata(in_bvec);
@@ -45,7 +38,7 @@ for i = 1:size(ix,1)
     ix_vx = ix(i);
     data_vx = [data_6000(ix_vx), data_30000(ix_vx)];
     g_vx = [g_corr{1}(ix_vx), g_corr{2}(ix_vx)];
-    [ar(ix_vx), beta(ix_vx)] = getAxonRadius(delta,Delta,g_vx,data_vx,'Neumann');
+    [ar(ix_vx), beta(ix_vx)] = getAxonRadius(delta,Delta,g_vx,data_vx,'VanGelderen');
     if mod(i,floor(size(ix,1)/10))<1e-2
        fprintf('Progress: %d %%\n', floor(i/size(ix,1)*100));
     end
