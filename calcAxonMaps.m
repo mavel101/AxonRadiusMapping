@@ -24,6 +24,9 @@ g = [sqrt(bval1/bval2)*gmax, gmax];
 % correct gradient with factors from nonlinearity correction
 bval = importdata(in_bval);
 bvec = importdata(in_bvec);
+if size(bvec,2) ~= 3
+    bvec = bvec.';
+end    
 grad_dev = niftiread(in_grad_dev);
 corr_fac = correctgradient(bval, bvec, grad_dev);
 g_corr =  {corr_fac{1} * g(1), corr_fac{2} * g(2)};
