@@ -30,19 +30,21 @@ end
 grad_dev = niftiread(in_grad_dev);
 corr_fac = correctgradient(bval, bvec, grad_dev);
 g_corr =  {corr_fac{1} * g(1), corr_fac{2} * g(2)};
+g_corr_1 = g_corr{1};
+g_corr_2 = g_corr{2};
 
 ar = zeros(size(data_6000),'like',data_6000);
 beta = zeros(size(data_6000),'like',data_6000);
 
 % skip zeros in volumes
-ix = find(data_6000);
 disp('Starting axon diameter calculation');
 tic
-for i = 1:size(ix,1)
-    ix_vx = ix(i);
-    data_vx = [data_6000(ix_vx), data_30000(ix_vx)];
-    g_vx = [g_corr{1}(ix_vx), g_corr{2}(ix_vx)];
-    [ar(ix_vx), beta(ix_vx)] = getAxonRadius(delta,Delta,g_vx,data_vx,'VanGelderen');
+parfor i = 1:numel(data_6000)
+    data_vx = [data_6000(i), data_30000(i)];
+    g_vx = [g_corr_1(i), g_corr_2(i)];
+    if all(data_vx)
+        [ar(i), beta(i)] = getAxonRadius(delta,Delta,g_vx,data_vx,'VanGelderen');
+    end
 end
 toc
 
