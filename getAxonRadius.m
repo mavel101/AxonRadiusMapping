@@ -1,16 +1,15 @@
 function [r, beta]  = getAxonRadius(delta, Delta, g, y, model)
 
-
     % "getAxonRadius": Estimate the axon radius from multi-shell diffusion
     % data, of which the lowest b-value is sufficiently high to suppress
     % the extra-axonal compartment. For in vivo human MRI, we recommend
-    % b=6000s/mm2. 
+    % b = 6000 s/mm2. 
     %
     % [r, beta]  = getAxonRadius(delta, Delta, g, y, model)
     %       output:
-    %           - r:  effective MR radius
+    %           - r:    effective MR radius
     %           - beta: [1x1] The slope of the signal scaling as a function
-    %           of 1/sqrt. ~ f/sqrt(Da)
+    %                   of 1/sqrt. ~ f/sqrt(Da)
     
     %       input:
     %           - delta:  gradient duration [ms]
@@ -24,23 +23,17 @@ function [r, beta]  = getAxonRadius(delta, Delta, g, y, model)
     %  Author: Jelle Veraart (jelle.veraart@nyulangone.org)
     %  Copyright (c) 2019 New York University
 
-
-
     if ~exist('model', 'var')
         model = 'VanGelderen';
     end
         
-    
     options = optimset('lsqnonlin'); 
     options = optimset(options,'Jacobian','on','TolFun',1e-12,'TolX',1e-12,'MaxIter',10000,'Display','off');
-    
     
     gyroMagnRatio =  267.513*10^(-6);
     q = g*gyroMagnRatio;
     b = (q.*delta).^2.*(Delta - delta/3);
     
-    
-  
     start = [sqrt(4*pi)*rand(), 1.5+2*rand()];
     pars = lsqnonlin(@(x)residuals(x, [delta(:), Delta(:), g(:)], y, model),start,[0 0],[sqrt(4*pi) 5],options);
     
@@ -64,7 +57,7 @@ function [s, ds] = AxonDiameterFWD(delta, Delta, g, pars, model)
     
     % read parameters with fixed D0
     D0 = 2.5; 
-    gyroMagnRatio =  267.513*10^(-6);
+    gyroMagnRatio =  267.513e-6;
     beta = pars(1);
     r = pars(2);
 
@@ -97,23 +90,25 @@ function [s, ds] = vg(delta, Delta, q, r, D0)
         bardelta=delta/td; dbardelta = -2*delta*D0 / r^3;
         barDelta=Delta/td; dbarDelta = -2*Delta*D0 / r^3;
 
-
         N=15; 
-        b = [1.8412    5.3314    8.5363   11.7060   14.8636   18.0155   21.1644 24.3113   27.4571   30.6019 ...
-             33.7462   36.8900   40.0334   43.1766   46.3196 49.4624   52.6050   55.7476   58.8900   62.0323];
-   
+        b = [ 1.8412  5.3314  8.5363 11.7060 14.8636 18.0155 21.1644 24.3113 27.4571 30.6019 ...
+             33.7462 36.8900 40.0334 43.1766 46.3196 49.4624 52.6050 55.7476 58.8900 62.0323];
    
         s = 0; ds = 0;
         for k=1:N
-           s = s + (2/(b(k)^6*(b(k)^2-1)))*(-2 + 2*b(k)^2*bardelta + ...
-                          2*(exp(-b(k)^2*bardelta)+exp(-b(k)^2*barDelta)) - ...
-                          exp(-b(k)^2*(bardelta+barDelta)) - exp(-b(k)^2*(barDelta-bardelta))); 
+           s = s + (2/(b(k)^6*(b(k)^2-1)))*( -2 + ...
+                            2*( b(k)^2*bardelta + ...
+                                exp(-b(k)^2*bardelta) + ...
+                                exp(-b(k)^2*barDelta) ) - ...
+                            exp(-b(k)^2*(bardelta+barDelta)) - ...
+                            exp(-b(k)^2*(barDelta-bardelta)) );
+                            
            ds = ds +  (2/(b(k)^6*(b(k)^2-1)))*( ...
-                            2*b(k)^2*dbardelta + ...
-                            2*exp(-b(k)^2*bardelta) - b(k)^2*dbardelta + ...
-                            2*exp(-b(k)^2*barDelta) - b(k)^2*dbarDelta - ...
-                            exp(-b(k)^2*(bardelta+barDelta)) - b(k)^2*(dbardelta + dbarDelta) - ... 
-                            exp(-b(k)^2*(barDelta-bardelta)) - b(k)^2*(dbarDelta - dbardelta));           
+                            2*( b(k)^2*dbardelta + ...
+                                exp(-b(k)^2*bardelta) .* (-b(k)^2*dbardelta) + ...
+                                exp(-b(k)^2*barDelta) .* (-b(k)^2*dbarDelta) ) - ...
+                            exp(-b(k)^2*(bardelta+barDelta)) .* (-b(k)^2*(dbardelta+dbarDelta)) - ... 
+                            exp(-b(k)^2*(barDelta-bardelta)) .* (-b(k)^2*(dbarDelta-dbardelta)) );           
         end
         s = s.*D0.*q.^2.*td^3;
         ds = ds.*D0.*q.^2.*td^3 + 6*s.*q.^2.*r^5 / D0^2;
