@@ -61,7 +61,7 @@ function [s, ds] = AxonDiameterFWD(delta, Delta, g, pars, model)
     beta = pars(1);
     r = pars(2);
 
-    % compute b-values using Tjeskall-Tanner sequence
+    % compute b-values using Stejskal-Tanner sequence
     q = g*gyroMagnRatio;
     b = (q.*delta).^2.*(Delta - delta/3);
  
@@ -71,13 +71,13 @@ function [s, ds] = AxonDiameterFWD(delta, Delta, g, pars, model)
         case 'Neumann'
             s = beta*exp(-(7/48)*q.^2.*delta*r^4/D0)./sqrt(b);
             ds_dbeta = exp(-(7/48)*q.^2.*delta*r^4/D0) ./ sqrt(b);    
-            ds_dr = beta ./ sqrt(b) .* exp(-(7/48)*q.^2.*delta*r^4/D0) .*(-(7/12)*q.^2.*delta*r^3/D0);
+            ds_dr = s .* -(7/12)*q.^2.*delta*r^3/D0;
             
         case 'VanGelderen'
             [Svg, dSvg] = vg(delta, Delta, q, r, D0);
             s = beta*exp(-Svg) ./ sqrt(b);
             ds_dbeta = exp(-Svg) ./ sqrt(b);
-            ds_dr = beta*exp(-Svg) ./ sqrt(b) .* -dSvg;
+            ds_dr = s .* -dSvg;
     end
     
     ds = [ds_dbeta, ds_dr];
@@ -102,7 +102,7 @@ function [s, ds] = vg(delta, Delta, q, r, D0)
                                 exp(-b(k)^2*barDelta) ) - ...
                             exp(-b(k)^2*(bardelta+barDelta)) - ...
                             exp(-b(k)^2*(barDelta-bardelta)) );
-                            
+
            ds = ds +  (2/(b(k)^6*(b(k)^2-1)))*( ...
                             2*( b(k)^2*dbardelta + ...
                                 exp(-b(k)^2*bardelta) .* (-b(k)^2*dbardelta) + ...
@@ -110,8 +110,11 @@ function [s, ds] = vg(delta, Delta, q, r, D0)
                             exp(-b(k)^2*(bardelta+barDelta)) .* (-b(k)^2*(dbardelta+dbarDelta)) - ... 
                             exp(-b(k)^2*(barDelta-bardelta)) .* (-b(k)^2*(dbarDelta-dbardelta)) );           
         end
-        s = s.*D0.*q.^2.*td^3;
+        
+        % Note "s" used before scaling!
         ds = ds.*D0.*q.^2.*td^3 + 6*s.*q.^2.*r^5 / D0^2;
+        
+        s = s.*D0.*q.^2.*td^3;
 end
 
 
