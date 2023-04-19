@@ -77,7 +77,7 @@ function [s, ds] = AxonDiameterFWD(delta, Delta, g, pars, model)
         case 'Neumann'
             s = beta * exp(-(7/48)*q.^2.*delta*r^4/D0) ./ sqrt(b);
             ds_dbeta = exp(-(7/48)*q.^2.*delta*r^4/D0) ./ sqrt(b);
-            ds_dr = s .* -(7/12)*q.^2.*delta*r^3/D0;
+            ds_dr = s .* (-(7/12)*q.^2.*delta*r^3/D0);
 
         case 'VanGelderen'
             [Svg, dSvg] = vg(delta, Delta, q, r, D0);
