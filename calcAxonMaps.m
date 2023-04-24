@@ -43,7 +43,7 @@ parfor i = 1:numel(data_6000)
     data_vx = [data_6000(i), data_30000(i)];
     g_vx = [g_corr_1(i), g_corr_2(i)];
     if all(data_vx)
-        [ar(i), beta(i)] = getAxonRadius(delta,Delta,g_vx,data_vx,'VanGelderen');
+        [ar(i), beta(i)] = getAxonRadius(delta,Delta,g_vx,data_vx,'Neumann');
     end
 end
 toc
