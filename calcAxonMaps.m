@@ -33,6 +33,16 @@ g_corr =  {corr_fac{1} * g(1), corr_fac{2} * g(2)};
 g_corr_1 = g_corr{1};
 g_corr_2 = g_corr{2};
 
+% save gradient maps for profiling
+[path, name] = fileparts(in_6000);
+savename = fullfile(path,'grads_6000');
+nifti_info.Datatype = class(g_corr_1);
+niftiwrite(g_corr_1, savename, nifti_info);
+
+savename = fullfile(path,'grads_30000');
+nifti_info.Datatype = class(g_corr_2);
+niftiwrite(g_corr_2, savename, nifti_info);
+
 ar = zeros(size(data_6000),'like',data_6000);
 beta = zeros(size(data_6000),'like',data_6000);
 
@@ -48,7 +58,6 @@ parfor i = 1:numel(data_6000)
 end
 toc
 
-[path, name] = fileparts(in_6000);
 savename = fullfile(path,'AxonRadiusMap');
 nifti_info.Datatype = class(ar);
 niftiwrite(ar, savename, nifti_info);
