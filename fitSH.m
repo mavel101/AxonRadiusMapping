@@ -26,7 +26,7 @@ for i = 1:numel(bvalues)
         b0 = fitSphericalMean_mle(dirs, y(list, :), sigma, 0);
     else
         N = N+1;
-        K0(N,:) = fitSphericalMean_mle(dirs, y(list, :), sigma, 6)./b0;
+        K0(N,:) = fitSphericalMean_mle(dirs, y(list, :), sigma, 6);
         b(N, 1) = bvalues(i);
     end
 end
